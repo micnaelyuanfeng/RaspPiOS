@@ -1,2 +1,2 @@
 # RaspPiOS
-An OS for Raspberry Pi 1 B+
+An OS for Raspberry Pi 2
