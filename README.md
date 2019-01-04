@@ -1,20 +1,13 @@
-# RaspPiOS
-An OS for Raspberry Pi 2
-C_SOURCE = \
-			main.c \
-			bstree.c
-OBJ_FILE = \
-			main.o \
-			bstree.o
-			
-CC = gcc
-FLAGS = -c -g -Wall
-TARGET = myBst
+RaspPiOS Project
 
-all: $(TARGET)
-
-$(TARGET): $(OBJ_FILE)
-	$(CC) $(OBJ_FILE) -o $(TARGET)
+	MileStone
+	Bootloader
+	Mode Switching
+	Memory Management
+	Virtual Memeory
+	File System
+	Shell
 	
-%.o:%.c
-	$(CC) $(FLAGS) $< -o $@
+	Doc tree
+		https://drive.google.com/drive/folders/1Q1E3vbkfjeTnIanwtNnjFabBqFgYb6-y
+	
