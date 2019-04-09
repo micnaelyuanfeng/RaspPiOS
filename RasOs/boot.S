@@ -1,27 +1,20 @@
-// AArch64 mode
-// To keep this in the first portion of the binary.
 .section ".text.boot"
- 
-#include "Include\sysregs.h"
 
-// Make _start global.
-.globl _start
- 
-//.org 0x80000
-// Entry point for the kernel. Registers are not defined as in AArch32.
-_start:
-    // read cpu id, stop slave cores
-    mrs     x1, mpidr_el1
-    and     x1, x1, #3
-    cbz     x1, _el1_entry
-    b       _halt_cpu
-    // cpu id > 0, stop
-_halt_cpu:  
-	wfi
-    b       _halt_cpu
+#include "include/sysSetting.h"
 
-_el1_entry:  // cpu id == 0
-    // set stack before our code
+.global start
+start:
+    mrs x1, mpidr_el1
+    and x1, x1, #3          //cpu core id = 0, 1, 2, 3
+    cbz x1, el1_entry
+    b   cpu_goes_idle
+
+cpu_goes_idle:
+    wfi
+    b cpu_goes_idle         //should not go here
+
+el1_entry:
+     msr sctlr_el1, XZR
     ldr x0, =SCTLR_CONTROL_VALUES
     msr sctlr_el1, x0
 
@@ -34,19 +27,13 @@ _el1_entry:  // cpu id == 0
     ldr x0, =SPSR_VALUE
     msr spsr_el3, x0
 
-    adr x0, _kernel_start
+    adr x0, kernel_start
     msr elr_el3, x0
 
     eret
 
- _kernel_start:
-    // clear bss
-    ldr     x0, =__bss_start
-    ldr     x1, =__bss_size
-	sub     x1, x1, x0
-    bl      _memzero
+kernel_start:
+    ldr x0, =KERNEL_STACK_START
+    mov sp, x0
 
-    mov     sp, #0x10000
-    // jump to C code, should not return
-	bl      kernel_main
-    
+    bl   kernel_main

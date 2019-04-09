@@ -1,24 +1,14 @@
 #ifndef _UART_H_
 #define _UART_H_
 
-typedef bool (*_uart_init)(void);
-typedef bool (*_uart_send)(uint8 character);
-typedef bool (*_uart_receive)(uint8* character);
-typedef bool (*_uart_send_string)(void);
+#define ALL_BITS_MASK_32                0x00000000
+#define BAUD_RATE_DIVIDER               40
+#define DELAY_CYCLES                    150
 
-typedef struct _uart_rts
-{
-    _uart_init          uart_init;
-    _uart_send          uart_send_character;
-    _uart_receive       uart_receive_character;
-    _uart_send_string   uart_send_string;
-}uart_rts_call_backs;
-
-struct device_uart
-{
-    uart_rts_call_backs uart_rts;
-};
-
-bool uart_device_init(void);
+void    uart_init(void);
+void    uart_ttl_send(uint8_t character);
+uint8_t uart_ttl_receive(void);
+void    uart_ttl_send_str(uint8_t* str);
+void    uart_printf_if(void*p, char c);
 
 #endif

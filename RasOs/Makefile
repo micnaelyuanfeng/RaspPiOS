@@ -1,44 +1,15 @@
 ##########################################################
-#		MakeFile For Raspaberry Pi OS V0.01		
+#		MakeFile For Raspaberry Pi OS V0.02		
 ##########################################################
-C_SRC  		 := main.c	\
-				api.c	\
-				uart.c	\
-				printf.c \
-				exception.c \
-				timer.c \
-				list.c \
-				fpools.c \
-				mm.c \
-				process.c \
-				scheduler.c \
 
-S_SRC   	 := boot.s	\
-				sysapi.s \
-				eentry.s \
-				ctxswitch.s \
 
-C_OBJ        := main.o	\
-				api.o	\
-				uart.o	\
-				printf.o \
-				exception.o \
-				timer.o \
-				list.o \
-				fpools.o \
-				mm.o \
-				process.o \
-				scheduler.o \
+C_SRC := $(shell find.exe . -name "*.c")
+S_SRC := $(shell find.exe . -name "*.S")
 
-S_OBJ		 := boot.o	\
-				sysapi.o \
-				eentry.o \
-				ctxswitch.o \
+C_OBJ := $(patsubst %.c,%.o,$(C_SRC))
+S_OBJ := $(patsubst %.S,%.o,$(S_SRC))
 
-ASM_FOLDER   := asm
-
-HEADERS   	 := Include
-
+HEADERS   	 := include
 #CC			 := arm-none-eabi-gcc
 CC           := aarch64-elf-gcc
 
@@ -61,33 +32,19 @@ ASM_FLAGS 	 := -I $(HEADERS)
 C_FLAGS   	 := -Wall -nostdlib -nostartfiles -ffreestanding -I $(HEADERS) -mgeneral-regs-only
 QEMU_FLAGS   := -d in_asm
 
-#CHIP_ARCHITECHTURE
-ifeq ($(ARCH1),1)
-	RASPIARCH = raspi
-	ARCH64 = 0
-endif
-
-ifeq ($(ARCH2),1)
-	RASPIARCH = raspi2
-	ARCH64 = 1
-endif
-
-ifeq ($(ARCH3),1)
-	RASPIARCH = raspi3
-	ARCH64 = 1
-endif
-
 #QEMU
 QEMU_RUN := qemu-system-aarch64
 
+#ARCHITECTURE
+RASPIARCH = raspi3
+
 #MEMORY
-MEMORY_SIZE := 512
+MEMORY_SIZE := 1024
 
 ##########################################################
 # 		Build Kernel
 ##########################################################
 .PHONY:	all
-
 all: build_kernel link_kernel
 
 build_kernel: $(C_OBJ) $(S_OBJ)
@@ -99,7 +56,7 @@ build_kernel: $(C_OBJ) $(S_OBJ)
 	$(CC) $(ASM_FLAGS) $< -c -o $@
 
 link_kernel:
-	$(LINKER) -T rslink.ld -nostdlib -nostartfiles -O2 $(C_OBJ) $(S_OBJ) -o $(TARGET_ELF)
+	$(LINKER) -T link.ld -nostdlib -nostartfiles -O2 $(C_OBJ) $(S_OBJ) -o $(TARGET_ELF)
 
 ##########################################################
 # 		Copy to Disk for Real Hardware
@@ -111,22 +68,20 @@ copy_img:
 # 		Dump Elf file
 ##########################################################
 obj_dump:
-	$(DUMP) -t $(TARGET_ELF)
+	$(DUMP) -D $(TARGET_ELF)
 
 ##########################################################
 # 		Qemu Run
 ##########################################################
 run:
-ifeq ($(ARCH3),1)
-	$(QEMU_RUN) -M $(RASPIARCH)  -serial stdio -kernel $(TARGET_ELF)
-else
-	$(QEMU_RUN) -m $(MEMORY_SIZE) -M $(RASPIARCH) $(QEMU_FLAGS) -kernel $(TARGET_ELF)
-endif
+	$(QEMU_RUN) -m 1024 -M $(RASPIARCH)  -serial stdio -kernel $(TARGET_ELF)
+
 
 ##########################################################
 # 		Clean All Builds
 ##########################################################
+.PHONY: clean
 clean:
-	rm *.o
+	rm $(C_OBJ)
+	rm $(S_OBJ)
 	rm *.elf
-
